@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amy the Enzyme: Sugar Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3ecff;--ink:#2a1a4a;--card:#fff;--pink:#ff4f9a;--yel:#ffc933;--teal:#19c3b1;--mute:#6b5a8c;--field:#fff8e1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1030;--ink:#f4ecff;--card:#2a1a4a;--mute:#b9a6dd;--field:#34205c}}
+:root[data-theme="dark"]{--bg:#1a1030;--ink:#f4ecff;--card:#2a1a4a;--mute:#b9a6dd;--field:#34205c}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 17px/1.4 "Baloo 2",ui-rounded,"Trebuchet MS",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:14px}
+h1{font-weight:800;font-size:28px;line-height:1.1;margin:4px 0 2px}
+.sub{color:var(--mute);margin:0 0 12px}
+.box{background:var(--card);border:3px solid var(--ink);border-radius:20px;box-shadow:4px 4px 0 var(--ink);padding:12px;margin-bottom:14px}
+canvas{display:block;width:100%;border-radius:12px;background:var(--field);border:3px solid var(--ink)}
+.say{font-weight:800;font-size:18px;min-height:52px;margin:10px 0 0}
+.goal{display:flex;align-items:center;gap:10px;margin-top:8px}
+.bar{flex:1;height:16px;border:3px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--field)}
+.bar i{display:block;height:100%;width:0;background:var(--teal);transition:width .2s}
+label{display:flex;justify-content:space-between;font-weight:800}
+input[type=range]{width:100%;height:36px;accent-color:var(--pink);margin:2px 0 8px}
+.stats{display:flex;gap:8px;margin-top:4px}
+.stats div{flex:1;text-align:center;border:3px solid var(--ink);border-radius:14px;padding:4px;background:var(--field)}
+.stats b{display:block;font-size:24px;line-height:1.1}
+button{font:800 17px "Baloo 2",system-ui,sans-serif;color:var(--ink);background:var(--yel);border:3px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink);padding:8px 14px;cursor:pointer;min-height:44px}
+button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+:focus-visible{outline:4px solid var(--pink);outline-offset:2px}
+.key{display:flex;gap:12px;flex-wrap:wrap;color:var(--mute);font-size:15px;margin-top:8px}
+.key span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;border:2px solid var(--ink);background:var(--c)}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1}.tabs .on{background:var(--pink);color:#fff}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}#clock{font-size:30px;font-weight:800}
+button:disabled{opacity:.45;cursor:not-allowed}.log{font-size:15px;color:var(--mute);margin:6px 0}.log div{border-bottom:2px dotted var(--mute);padding:2px 0}
+#c{aspect-ratio:8/5}
+
+h2{font-weight:800;font-size:22px;margin:0 0 8px}
+.q{margin:12px 0}.q button{display:block;width:100%;text-align:left;margin:6px 0;background:var(--card);box-shadow:2px 2px 0 var(--ink)}
+.q button.good{background:var(--teal);color:#2a1a4a}.q button.bad{background:#ffb3b3;color:#2a1a4a}.q .ex{color:var(--mute);font-size:15px;min-height:20px}
+.stats div span{font-size:14px;color:var(--mute)}
+.steps{display:flex;gap:6px;margin-bottom:12px}.steps div{flex:1;text-align:center;border:3px solid var(--ink);border-radius:14px;padding:4px 2px;background:var(--card);font-size:15px;line-height:1.2;color:var(--mute)}.steps .cur{background:var(--pink);color:#fff}.steps .ok{background:var(--teal);color:#2a1a4a}
+.pulse{background:var(--pink)!important;color:#fff!important}
+</style></head><body><main>
+<h1>Amy the Enzyme: Sugar Lab</h1>
+<p class="sub">Amy is an enzyme that cuts starch into sugar. Her mouth (active site) fits starch like a key in a lock.</p>
+<div class="steps" id="steps"></div>
+<div class="box">
+<h2 id="pt"></h2>
+<canvas id="c" aria-label="Five Amy enzymes cutting starch into sugar"></canvas>
+<div class="key"><span style="--c:#ff4f9a">Amy (enzyme)</span><span style="--c:#ffc933">Starch</span><span style="--c:#19c3b1">Sugar</span></div>
+<p class="say" id="say" aria-live="polite"></p>
+</div>
+<div class="box">
+<p class="sub" id="ins" style="margin-top:0"></p>
+<label for="s"><span id="sl"></span><span id="sv"></span></label>
+<input id="s" type="range">
+<div class="stats"><div><b id="a1">0</b><span id="l1"></span></div><div><b id="a2">0</b><span id="l2"></span></div></div>
+<p class="sub" id="tried" style="margin:8px 0"></p>
+<p class="say" id="fb" style="min-height:0;margin:0 0 8px;font-size:17px"></p>
+<button id="go" style="display:none">Run ▶</button>
+<button id="rs">New Amys 🔄</button> <button id="gr" disabled>🔒 Lock in my best</button>
+</div>
+<div class="box" id="gbox" style="display:none">
+<canvas id="g" style="height:290px"></canvas>
+<div class="key" id="gkey"></div>
+</div>
+<div class="box" id="qbox" style="display:none">
+<h2>Quick questions</h2>
+<div id="qs"></div>
+<button id="nx" style="display:none">Next part →</button>
+</div>
+<div class="box" id="fin" style="display:none">
+<h2>🎉 You're an enzyme expert!</h2>
+<div class="log"><div>🧪 Amy works best near pH 7. Very acidic or basic pH unfolds her.</div><div>🌡️ She works best near 37°C. Cold only slows her. Heat unfolds her for good.</div><div>🧫 More Amys make more sugar, until the starch runs out.</div></div>
+<p><button id="again">Play again 🔄</button></p>
+</div>
+</main>
+<script>
+
+const cv=document.getElementById('c'),ctx=cv.getContext('2d'),$=id=>document.getElementById(id),TAU=6.2832;
+let W=480,H=300,T=37,pH=7,denat=0,sugar=0,stamps=[],enz=[],subs=[],prods=[],last=performance.now();
+function size(){const d=window.devicePixelRatio||1,cw=cv.clientWidth,k=cw*d/W;cv.width=cw*d;cv.height=cw*d*H/W;ctx.setTransform(k,0,0,k,0,0)}
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function mk(r){const a=rnd(0,TAU);return{x:rnd(r,W-r),y:rnd(r,H-r),vx:Math.cos(a),vy:Math.sin(a),r,busy:0,cut:0,ang:a,rot:rnd(0,TAU),spin:rnd(-1.5,1.5),dock:false,hold:null,seed:rnd(0,100)}}
+let nA=3,nS=14,finite=false,trialS=0;function reset(){denat=0;enz=[];for(let i=0;i<nA;i++)enz.push(mk(26));subs=[];for(let i=0;i<nS;i++)subs.push(mk(12));prods=[]}
+const tempf=x=>x<=37?Math.exp(-Math.pow((x-37)/18,2)):Math.exp(-Math.pow((x-37)/10,2));
+const tempF=()=>tempf(T);
+const phf=x=>Math.exp(-Math.pow((x-7)/2.2,2));
+const phF=()=>phf(pH);
+const act=()=>tempF()*phF()*Math.max(0,1-denat*1.6);
+const distort=()=>Math.min(1,Math.max(denat*2,(1-phF())*0.9));
+function move(o,s,dt){
+  o.x+=o.vx*s*dt;o.y+=o.vy*s*dt;
+  if(o.x<o.r){o.x=o.r;o.vx=Math.abs(o.vx)}if(o.x>W-o.r){o.x=W-o.r;o.vx=-Math.abs(o.vx)}
+  if(o.y<o.r){o.y=o.r;o.vy=Math.abs(o.vy)}if(o.y>H-o.r){o.y=H-o.r;o.vy=-Math.abs(o.vy)}
+}
+function place(s,e){s.x=e.x+Math.cos(e.ang)*19.4;s.y=e.y+Math.sin(e.ang)*19.4;s.rot=e.ang+Math.PI}
+function split(e){
+  const s=e.hold;subs.splice(subs.indexOf(s),1);e.hold=null;e.busy=0.3;sugar++;trialS++;stamps.push(performance.now());
+  for(let k=0;k<2;k++)prods.push({x:s.x,y:s.y,vx:(k?1:-1)*rnd(30,60),vy:rnd(-40,40),life:1.8});
+  if(!finite)setTimeout(()=>{if(subs.length<nS)subs.push(mk(12))},900);
+}
+function step_(dt){
+  if(T>48)denat=Math.min(1,denat+dt*(T-48)/40);
+  const a=act(),sf=(T+10)/47*55;
+  for(const e of enz){
+    e.cut=Math.max(0,e.cut-dt);e.busy=Math.max(0,e.busy-dt);
+    if(e.hold){if(e.cut<=0)split(e);else place(e.hold,e)}
+    else{
+      move(e,sf*0.45,dt);
+      const t=Math.atan2(e.vy,e.vx),da=((t-e.ang+Math.PI)%TAU+TAU)%TAU-Math.PI;e.ang+=da*Math.min(1,dt*6);
+    }
+  }
+  for(const s of subs)if(!s.dock){move(s,sf,dt);s.rot+=s.spin*dt}
+  for(const e of enz){
+    if(e.hold||e.busy>0||(part==2&&!running))continue;
+    for(const s of subs){
+      if(s.dock||Math.hypot(e.x-s.x,e.y-s.y)>e.r+s.r+2)continue;
+      if(Math.random()<a*0.35){s.dock=true;e.hold=s;e.cut=0.45;place(s,e)}
+      else{const b=Math.atan2(s.y-e.y,s.x-e.x);s.vx=Math.cos(b);s.vy=Math.sin(b);e.busy=0.12}
+      break;
+    }
+  }
+  for(let i=prods.length-1;i>=0;i--){const p=prods[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;if(p.life<=0)prods.splice(i,1)}
+}
+function tri(x,y,R,rot,fill,al){
+  ctx.globalAlpha=al==null?1:al;ctx.fillStyle=fill;ctx.strokeStyle='#2a1a4a';ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.beginPath();
+  for(let k=0;k<3;k++){const q=rot+k*2.0944;ctx.lineTo(x+Math.cos(q)*R,y+Math.sin(q)*R)}
+  ctx.closePath();ctx.fill();ctx.stroke();ctx.globalAlpha=1;
+}
+function bead(x,y,r,c){ctx.fillStyle=c;ctx.strokeStyle='#2a1a4a';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.stroke()}
+const mix=(d)=>`rgb(${Math.round(255-101*d)},${Math.round(79+75*d)},${Math.round(154+14*d)})`;
+function drawEnz(e,t){
+  const d=distort(),r=e.r,un=denat>0.5||phF()<0.15,col=mix(un?1:Math.min(1,denat*2));
+  ctx.lineJoin='round';
+  if(un){
+    const pts=[];
+    for(let i=0;i<=14;i++){const u=i/14;pts.push([Math.min(W-6,Math.max(6,e.x+(u-.5)*110)),Math.min(H-6,Math.max(6,e.y+Math.sin(u*9+t*3+e.seed)*14))])}
+    ctx.strokeStyle='#2a1a4a';ctx.lineWidth=7;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+    ctx.strokeStyle=col;ctx.lineWidth=3;ctx.stroke();
+    pts.forEach((p,i)=>{if(i%2==0)bead(p[0],p[1],5,col)});
+    ctx.font='16px sans-serif';ctx.fillText('💫',pts[7][0]-8,pts[7][1]-14);return;
+  }
+  const hw=0.4,L=hw*(1+0.7*d),R=hw*(1-0.75*d),apex=6.4+d*10,N=36;
+  ctx.fillStyle=col;ctx.strokeStyle='#2a1a4a';ctx.lineWidth=3;ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const q=e.ang+R+(TAU-L-R)*i/N,rad=r*(1+0.05*Math.sin(q*3+e.seed)+d*0.2*Math.sin(t*4+i*1.7+e.seed));
+    ctx.lineTo(e.x+Math.cos(q)*rad,e.y+Math.sin(q)*rad);
+  }
+  ctx.lineTo(e.x+Math.cos(e.ang)*apex,e.y+Math.sin(e.ang)*apex);ctx.closePath();ctx.fill();ctx.stroke();
+  for(const sd of[-1,1]){
+    const q=e.ang+sd*1.5,ex=e.x+Math.cos(q)*12,ey=e.y+Math.sin(q)*12;
+    if(d>0.65){ctx.strokeStyle='#2a1a4a';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ex-4,ey-4);ctx.lineTo(ex+4,ey+4);ctx.moveTo(ex+4,ey-4);ctx.lineTo(ex-4,ey+4);ctx.stroke()}
+    else{bead(ex,ey,5,'#fff');ctx.fillStyle='#2a1a4a';ctx.beginPath();ctx.arc(ex+Math.cos(e.ang)*1.8,ey+Math.sin(e.ang)*1.8,2,0,TAU);ctx.fill()}
+  }
+}
+function draw(now){
+  ctx.clearRect(0,0,W,H);const t=now/1000;
+  for(const p of prods)bead(p.x,p.y,5,'#19c3b1');
+  for(const s of subs)tri(s.x,s.y,13,s.rot,'#ffc933');
+  for(const e of enz)drawEnz(e,t);
+  for(const e of enz)if(e.hold)tri(e.hold.x,e.hold.y,13,e.hold.rot,'#ffc933');
+}
+
+function words(){
+  const tf=tempF(),pf=phF();
+  if(denat>0.5)return"💀 Amy unfolded! Heat wrecked her shape for good. Press New Amys.";
+  if(pf<0.15)return"💀 Amy unfolded! Very acidic or basic pH wrecks her shape, so starch can't fit.";
+  if(T>48)return"🔥 Too hot! Amy's shape is melting. Cool down fast!";
+  if(pf<0.5)return"😵 Wrong pH! Amy's mouth is bent out of shape, so starch fits badly.";
+  if(tf>0.8&&pf>0.8)return"✨ Sweet spot! Starch fits Amy's mouth like a key in a lock.";
+  if(T<37&&tf<0.5)return"🥶 Brrr. Everything moves in slow motion. Cold slows Amy but doesn't break her.";
+  if(T>40)return"🥵 Getting warm. Amy is wobbling.";
+  return"🤔 Working, but not at her best.";
+}
+const show=(el,b)=>{el.style.display=b?'':'none'};
+const RUNLEN=24,BC=['#19c3b1','#ffc933','#ff5a5f'],CURVE=[5,9,13,15,16,17,18,19,19,20,20,20];
+const tf2=x=>tempf(x)*(x<=48?1:Math.max(0,1-(x-48)/8));
+let part=0,stg=0,met=false,qa,running=false,runT=0,last3=null,stale=false,graphOn=false,locked=false,allDone=false;
+const P=[
+ {t:'Part 1 of 3: pH',sl:'🧪 pH',min:1,max:13,step:0.5,l1:'sugar per 10 sec',l2:"Amy's shape",nm:'pH',ok:v=>v>=6&&v<=8,
+  hint:v=>v<6?'Not quite. That pH is too acidic. Is Amy happy there? Keep testing.':'Not quite. That pH is too basic. Is Amy happy there? Keep testing.',
+  key:['Best (80%+ activity)','Working slowly','Amy unfolds'],
+  st:[{ins:'Step 1: Slide the pH down to very acidic (low numbers) and watch what happens to Amy.',ok:()=>pH<7&&phF()<0.15,btn:'Restart with new Amys 🔄',msg:"💀 Amy is destroyed! Her shape unfolded, so starch can't fit. Press Restart with new Amys.",start:{pH:7}},
+      {ins:'Step 2: Fresh Amys! Now slide the pH up to very basic (high numbers).',ok:()=>pH>7&&phF()<0.15,btn:'Restart with new Amys 🔄',msg:"💀 Destroyed again! Press Restart with new Amys.",start:{pH:7}},
+      {ins:'Step 3: Fresh Amys again. Slide the pH to find where she works best and the sugar comes fastest. Then lock it in.',free:1,start:{pH:5}}]},
+ {t:'Part 2 of 3: temperature',sl:'🌡️ Temperature',min:0,max:80,step:1,l1:'sugar per 10 sec',l2:"Amy's shape",nm:'temperature',ok:v=>v>=33&&v<=41,
+  hint:v=>v<33?'Not quite. That is too cold, so Amy is still sluggish. Test warmer.':'Not quite. That is too hot, so Amy is wobbling. Test cooler.',
+  key:['Best (80%+ activity)','Working slowly (cold is slow, not broken)','Amy unfolds'],
+  st:[{ins:'Step 1: Slide the temperature down to very cold and watch Amy.',ok:()=>T<=10,btn:'Continue ▶',start:{T:37}},
+      {ins:'Step 2: Now crank the temperature way up. Then slide it back down. Is she fixed?',ok:()=>denat>0.5,btn:'Restart with new Amys 🔄',msg:'💀 Amy is destroyed! Slide the temperature back down. Does she come back? Then press Restart.',start:{T:37}},
+      {ins:'Step 3: Fresh Amys. Slide the temperature to find where she works best. Then lock it in.',free:1,start:{T:15}}]},
+ {t:'Part 3 of 3: how many Amys?',sl:'🧫 Number of Amys',min:1,max:12,step:1,l1:'sugar made',l2:'starch left',nm:'number of Amys',ok:v=>v>=7&&v<=10,
+  hint:v=>v<7?'Not quite. Would more Amys still make more sugar? Test higher.':'That works, but some of those Amys are just waiting. Find the fewest that use up almost all the starch.',
+  key:['More Amys = more sugar','Extra Amys wasted: starch is the limit'],
+  st:[{ins:'Step 1: Use just 1 Amy and press Run. How much sugar does she make from 20 starch?',ok:()=>nA<=2,btn:'Continue ▶',start:{nA:1}},
+      {ins:'Step 2: Now pick 10 or more Amys and press Run. What is different?',ok:()=>nA>=10,btn:'Continue ▶',start:{nA:10}},
+      {ins:'Step 3: Find the fewest Amys that use up almost all the starch. Test with Run, then lock in your best.',free:1,start:{nA:4}}]}
+];
+const GR=[
+ {x0:1,x1:13,ym:100,tk:[0,50,100],xl:'pH',yl:'Amy activity (%)',f:x=>phf(x)*100,cls:x=>{const y=phf(x)*100;return y>=80?0:y<15?2:1},cur:()=>pH},
+ {x0:0,x1:80,ym:100,tk:[0,50,100],xl:'temperature (°C)',yl:'Amy activity (%)',f:x=>tf2(x)*100,cls:x=>{const y=tf2(x)*100;return y>=80?0:x>=50?2:1},cur:()=>T},
+ {x0:1,x1:12,ym:22,tk:[0,10,20],xl:'number of Amys',yl:'Sugar made in 24 s',f:x=>CURVE[Math.round(x)-1],cls:x=>x<=7.5?0:1,cur:()=>nA,disc:1}
+];
+const Q=[[
+ {q:'At which pH did Amy work best?',o:['pH 2','pH 7','pH 12'],a:1,ex:'Right! Amy works best near neutral pH 7, like in your spit.'},
+ {q:'What happened to Amy at very low and very high pH?',o:['She grew bigger','She lost her shape and unfolded','Nothing changed'],a:1,ex:'Yes. Extreme pH denatures an enzyme: it unfolds and loses its shape.'},
+ {q:"Why can't an unfolded Amy cut starch?",o:["Starch no longer fits her mouth (active site)",'Amy takes a nap','The starch gets bigger'],a:0,ex:"Exactly. An enzyme's shape is what lets it grab its starch."}],
+[
+ {q:'Which temperature worked best?',o:['About 5°C','About 37°C','About 65°C'],a:1,ex:'Yes! Close to body temperature.'},
+ {q:'How are cold and hot different for Amy?',o:["Cold slows her down, heat unfolds her for good","Both break her the same way","Cold makes her work faster"],a:0,ex:'Right. Cold molecules just move slowly. Heat actually breaks the enzyme.'},
+ {q:'You cool a too-hot Amy back down. Does she work again?',o:['Yes, right away',"No, her shape is lost for good",'Only if you add starch'],a:1,ex:'Correct. Denaturing by heat is permanent.'}],
+[
+ {q:'What happened as you added more and more Amys?',o:['Sugar kept going up forever','Sugar went up, then leveled off','Sugar went down'],a:1,ex:'Yes. The line climbs, then flattens out.'},
+ {q:'Why does it level off?',o:['Amys get tired','Only 20 starch, so extra Amys have nothing to cut','The pH changed'],a:1,ex:'Right. When the starch is used up, extra Amys just wait around.'},
+ {q:'A lab has plenty of Amys but wants more sugar. What helps most?',o:['Add more starch','Add even more Amys','Make it hotter'],a:0,ex:'Yes! The starch (substrate) is the limit, so add more starch.'}]];
+const cur=()=>[pH,T,nA][part];
+const phName=()=>pH<=3?'lemon 🍋':pH<5?'sour':pH<6.5?'a bit acidic':pH<=7.5?'spit-neutral 💧':pH<10?'a bit basic':'soapy 🧼';
+const fresh=()=>{if(part==2&&stale&&!running){reset();stale=false}};
+const S=()=>P[part].st[stg];
+function applyStart(){const t=S().start;if(t.pH!=null)pH=t.pH;if(t.T!=null)T=t.T;if(t.nA!=null)nA=t.nA;$('s').value=cur()}
+function nextStage(){stg++;met=false;running=false;last3=null;stale=false;applyStart();reset();sugar=0;stamps=[];$('s').disabled=false;renderStatic()}
+function setup(i){
+  part=i;const c=P[i],s=$('s');qa=[0,0,0];running=false;last3=null;stale=false;graphOn=false;locked=false;stg=0;met=false;$('fb').textContent='';
+  T=37;pH=7;nA=3;finite=i==2;nS=i==2?20:14;sugar=0;stamps=[];trialS=0;
+  s.min=c.min;s.max=c.max;s.step=c.step;s.disabled=false;
+  $('pt').textContent=c.t;$('sl').textContent=c.sl;$('l1').textContent=c.l1;$('l2').textContent=c.l2;
+  $('gkey').innerHTML=c.key.map((k,j)=>`<span style="--c:${BC[j]}">${k}</span>`).join('');
+  show($('go'),i==2);show($('gbox'),false);show($('qbox'),false);show($('nx'),false);
+  applyStart();reset();renderStatic();
+}
+function renderStatic(){
+  const st=S(),free=!!st.free;
+  $('ins').textContent=st.ins;$('tried').textContent=`Step ${stg+1} of ${P[part].st.length}`;
+  show($('rs'),free?part<2:met);$('rs').textContent=free?'New Amys 🔄':st.btn;$('rs').classList.toggle('pulse',!free);
+  show($('gr'),free);$('gr').disabled=running||locked;
+  $('gr').textContent=locked?'✅ Locked in':'🔒 Lock in '+(part==0?'pH '+pH:part==1?T+'°C':nA+' Amys');
+  $('go').disabled=running;
+  $('steps').innerHTML=['1 pH','2 Temperature','3 Amys'].map((n,i)=>`<div class="${allDone||i<part?'ok':i==part?'cur':''}">${allDone||i<part?'✅':i==part?'👉':'🔒'} ${n}</div>`).join('');
+}
+function ui(){
+  $('sv').textContent=part==0?pH+' · '+phName():part==1?T+'°C'+(T==37?' (body temp)':''):nA;
+  let say;
+  if(part<2){
+    const now=performance.now();stamps=stamps.filter(x=>now-x<10000);
+    $('a1').textContent=stamps.length;$('a2').textContent=Math.round((1-distort())*100)+'%';if(!met&&!S().free&&S().ok()){met=true;renderStatic()}
+    say=(S().msg&&S().ok())?S().msg:words();
+  }else{
+    $('a1').textContent=trialS;$('a2').textContent=subs.length;
+    say=running?`⏱️ ${Math.ceil(runT)}s of ${RUNLEN}s · starch left ${subs.length}`:last3?`${last3.n} Amys made ${last3.total} sugar. Starch left: ${20-last3.total}.`:'Pick a number of Amys, then press Run.';
+  }
+  $('say').textContent=say;
+}
+function runExp(){if(running||part!=2)return;reset();stale=false;trialS=0;runT=0;running=true;$('s').disabled=true;renderStatic()}
+function endRun(){
+  running=false;last3={n:nA,total:trialS};stale=true;if(!S().free&&S().ok())met=true;$('s').disabled=false;renderStatic();
+}
+function graph(){
+  graphOn=true;show($('gbox'),true);
+  const g=$('g'),d=window.devicePixelRatio||1,w=g.clientWidth,h=290;g.width=w*d;g.height=h*d;
+  const c=g.getContext('2d'),cs=getComputedStyle(document.documentElement),ink=cs.getPropertyValue('--ink').trim(),G=GR[part];
+  c.setTransform(d,0,0,d,0,0);c.fillStyle=cs.getPropertyValue('--field').trim();c.fillRect(0,0,w,h);c.font='700 14px "Baloo 2",system-ui,sans-serif';
+  const L=46,R=w-14,top=30,hh=190,X=v=>L+(v-G.x0)/(G.x1-G.x0)*(R-L),Y=v=>top+hh-v/G.ym*hh,N=120;
+  for(let i=0;i<N;i++){const xa=G.x0+(G.x1-G.x0)*i/N,xb=G.x0+(G.x1-G.x0)*(i+1)/N;c.globalAlpha=0.3;c.fillStyle=BC[G.cls((xa+xb)/2)];c.fillRect(X(xa),top,X(xb)-X(xa)+1,hh)}
+  c.globalAlpha=1;c.fillStyle=ink;c.textAlign='left';c.fillText(G.yl+' vs '+G.xl,L,18);
+  c.strokeStyle=ink;c.lineWidth=2;c.beginPath();c.moveTo(L,top);c.lineTo(L,top+hh);c.lineTo(R,top+hh);c.stroke();
+  c.textAlign='right';for(const v of G.tk)c.fillText(v,L-6,Y(v)+4);
+  c.textAlign='center';for(const v of[G.x0,(G.x0+G.x1)/2,G.x1])c.fillText(v,X(v),top+hh+18);c.fillText(G.xl,(L+R)/2,top+hh+38);
+  c.strokeStyle='#ff4f9a';c.lineWidth=4;c.lineJoin='round';c.beginPath();
+  if(G.disc){for(let n=1;n<=12;n++)n>1?c.lineTo(X(n),Y(G.f(n))):c.moveTo(X(n),Y(G.f(n)))}
+  else for(let i=0;i<=N;i++){const x=G.x0+(G.x1-G.x0)*i/N;i?c.lineTo(X(x),Y(G.f(x))):c.moveTo(X(x),Y(G.f(x)))}
+  c.stroke();
+  const v=cur(),px=X(v),py=Y(G.f(G.disc?Math.round(v):v));
+  c.setLineDash([5,4]);c.strokeStyle=ink;c.lineWidth=2;c.beginPath();c.moveTo(px,top);c.lineTo(px,top+hh);c.stroke();c.setLineDash([]);
+  c.fillStyle='#ffc933';c.beginPath();c.arc(px,py,8,0,TAU);c.fill();c.stroke();
+  c.fillStyle=ink;c.textAlign=px>w-80?'right':'left';c.fillText('you are here',px+(px>w-80?-10:10),top+14);
+}
+function showGraph(){graph();show($('qbox'),true);renderQs();$('gbox').scrollIntoView({behavior:'smooth',block:'nearest'})}
+function renderQs(){
+  $('qs').innerHTML=Q[part].map((q,i)=>`<div class="q"><b>${i+1}. ${q.q}</b>${q.o.map((o,j)=>`<button data-q="${i}" data-o="${j}"${qa[i]?' disabled':''}${qa[i]&&j==q.a?' class="good"':''}>${o}</button>`).join('')}<div class="ex">${qa[i]?q.ex:''}</div></div>`).join('');
+  show($('nx'),qa.every(Boolean));$('nx').textContent=part<2?'Next part →':'Finish 🎉';
+}
+$('qs').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;const i=+b.dataset.q,j=+b.dataset.o;
+  if(j==Q[part][i].a){qa[i]=1;renderQs()}
+  else{b.classList.add('bad');b.disabled=true;b.parentNode.querySelector('.ex').textContent='Not quite. Look at your graph and try again.'}
+};
+$('s').oninput=e=>{
+  const v=+e.target.value;
+  if(part==0)pH=v;else if(part==1)T=v;else{nA=v;fresh();while(enz.length<nA)enz.push(mk(26));while(enz.length>nA){const x=enz.pop();if(x.hold){x.hold.dock=false;x.hold=null}}}
+  if(graphOn)graph();renderStatic();
+};
+$('rs').onclick=()=>{if(S().free){reset();sugar=0;stamps=[]}else if(met)nextStage()};
+function lockIn(){
+  const v=cur(),c=P[part];
+  if(c.ok(v)){locked=true;$('fb').textContent='✅ Yes! Great '+c.nm+'. Here is the real graph. Answer the questions to move on.';showGraph();renderStatic()}
+  else $('fb').textContent=c.hint(v);
+}
+$('go').onclick=runExp;$('gr').onclick=lockIn;
+$('nx').onclick=()=>{if(part<2){setup(part+1);scrollTo(0,0)}else{allDone=true;renderStatic();document.querySelectorAll('main>.box').forEach(b=>show(b,false));show($('fin'),true);scrollTo(0,0)}};
+$('again').onclick=()=>{allDone=false;document.querySelectorAll('main>.box').forEach(b=>show(b,true));show($('fin'),false);setup(0);scrollTo(0,0)};
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  for(let i=0;i<(running?3:1);i++){step_(dt);if(running)runT+=dt}
+  if(running&&runT>=RUNLEN)endRun();
+  draw(now);ui();requestAnimationFrame(loop);
+}
+addEventListener('resize',size);
+size();setup(0);requestAnimationFrame(loop);
+</script></body></html>
